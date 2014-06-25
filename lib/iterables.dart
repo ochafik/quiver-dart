@@ -15,6 +15,7 @@
 library quiver.iterables;
 
 import 'dart:collection';
+import 'collection.dart';
 
 part 'src/iterables/concat.dart';
 part 'src/iterables/count.dart';
