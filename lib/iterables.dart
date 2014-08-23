@@ -15,6 +15,7 @@
 library quiver.iterables;
 
 import 'dart:collection';
+import 'package:collection/priority_queue.dart';
 
 part 'src/iterables/concat.dart';
 part 'src/iterables/count.dart';

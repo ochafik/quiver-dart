@@ -36,56 +36,34 @@ class _Merge extends IterableBase {
 
   _Merge(this._iterables, this._compare);
 
-  Iterator get iterator =>
-      new _MergeIterator(
-          _iterables.map((i) => i.iterator).toList(growable: false),
-          _compare);
+  @override Iterator get iterator =>
+      new _MergeIterator(_iterables.map((i) => i.iterator), _compare);
 
-  String toString() => this.toList().toString();
+  @override String toString() => toList().toString();
 }
 
-/// Like [Iterator] but one element ahead.
-class _IteratorPeeker {
-  final Iterator _iterator;
-  bool _hasCurrent;
+class _MergeIterator<T> implements Iterator<T> {
+  HeapPriorityQueue<Iterator<T>> _heap;
+  T _current;
 
-  _IteratorPeeker(Iterator iterator)
-      : _iterator = iterator,
-        _hasCurrent = iterator.moveNext();
-
-  moveNext() {
-    _hasCurrent = _iterator.moveNext();
+  _MergeIterator(Iterable<Iterator<T>> iterators, Comparator<T> comparator) {
+    _heap = new HeapPriorityQueue<Iterator<T>>((Iterator<T> a, Iterator<T> b) {
+      return comparator(a.current, b.current);
+    });
+    _heap.addAll(iterators.where((it) => it.moveNext()));
   }
 
-  get current => _iterator.current;
-}
-
-class _MergeIterator implements Iterator {
-  final List<_IteratorPeeker> _peekers;
-  final Comparator _compare;
-  var _current;
-
-  _MergeIterator(List<Iterator> iterators, this._compare)
-      : _peekers = iterators.map((i) => new _IteratorPeeker(i)).toList();
-
-  bool moveNext() {
-    // Pick the peeker that's peeking at the puniest piece
-    _IteratorPeeker minIter = null;
-    for (var p in _peekers) {
-      if (p._hasCurrent) {
-        if (minIter == null || _compare(p.current, minIter.current) < 0) {
-          minIter = p;
-        }
-      }
-    }
-
-    if (minIter == null) {
+  @override get current => _current;
+  
+  @override bool moveNext() {
+    if (_heap.isEmpty) {
       return false;
     }
-    _current = minIter.current;
-    minIter.moveNext();
+    var it = _heap.removeFirst();
+    _current = it.current;
+    if (it.moveNext()) {
+      _heap.add(it);
+    }
     return true;
   }
-
-  get current => _current;
 }
