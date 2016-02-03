@@ -4,16 +4,16 @@ import 'package:quiver/streams.dart' as streams;
 
 class AsyncSet<T> {
   final _set = new Set<T>();
-  final _completers = <T, Completer<bool>>{};
+  final _containsCompleters = <T, Completer<bool>>{};
   final _completer = new Completer();
   final Stream<T> _stream;
 
   AsyncSet(this._stream) {
     _stream.listen((T value) {
       _set.add(value);
-      _completers.remove(value)?.complete(true);
+      _containsCompleters.remove(value)?.complete(true);
     }, onDone: () {
-      _completers.values.forEach((c) => c.complete(false));
+      _containsCompleters.values.forEach((c) => c.complete(false));
       _completer.complete();
     });
   }
@@ -24,7 +24,9 @@ class AsyncSet<T> {
     if (_set.contains(value)) {
       return new Future.value(true);
     }
-    return _completers.putIfAbsent(value, () => new Completer<bool>()).future;
+    return _containsCompleters
+        .putIfAbsent(value, () => new Completer<bool>())
+        .future;
   }
 
   Stream<T> toStream() {
