@@ -15,7 +15,7 @@
 library quiver.collection.delegates.list_test;
 
 import 'package:quiver/collection.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 class MyList extends DelegatingList<String> {
   final List<String> _delegate;
@@ -29,7 +29,7 @@ void main() {
   group('DelegatingList', () {
     DelegatingList<String> delegatingList;
 
-    setUp((){
+    setUp(() {
       delegatingList = new MyList(['a', 'b', 'cc']);
     });
 
@@ -153,7 +153,7 @@ void main() {
     });
 
     test('sort', () {
-      delegatingList.sort((a,b) => b.codeUnitAt(0) - a.codeUnitAt(0));
+      delegatingList.sort((a, b) => b.codeUnitAt(0) - a.codeUnitAt(0));
       expect(delegatingList, equals(['cc', 'b', 'a']));
     });
 

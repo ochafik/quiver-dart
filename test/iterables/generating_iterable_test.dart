@@ -14,12 +14,11 @@
 
 library quiver.iterables.property_iterable_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:quiver/iterables.dart';
 
 main() {
   group('GeneratingIterable', () {
-
     test("should create an empty iterable for a null start object", () {
       var iterable = new GeneratingIterable(() => null, (n) => null);
       expect(iterable, []);
@@ -36,7 +35,6 @@ main() {
       var iterable = new GeneratingIterable<Node>(() => node, (n) => n.parent);
       expect(iterable, [node, parent]);
     });
-
   });
 }
 

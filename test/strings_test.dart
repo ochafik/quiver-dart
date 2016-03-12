@@ -15,7 +15,7 @@
 library quiver.strings;
 
 import 'package:quiver/strings.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart' hide isEmpty;
 
 main() {
   group('isBlank', () {
@@ -30,6 +30,34 @@ main() {
     });
     test('should consider non-whitespace string not a blank', () {
       expect(isBlank('hello'), isFalse);
+    });
+  });
+
+  group('isEmpty', () {
+    test('should consider null to be empty', () {
+      expect(isEmpty(null), isTrue);
+    });
+    test('should consider the empty string to be empty', () {
+      expect(isEmpty(''), isTrue);
+    });
+    test('should consider whitespace string to be not empty', () {
+      expect(isEmpty(' '), isFalse);
+    });
+    test('should consider non-whitespace string to be not empty', () {
+      expect(isEmpty('hello'), isFalse);
+    });
+  });
+
+  group('isDigit', () {
+    test('should return true for standard digits', () {
+      for (var i = 0; i <= 9; i++) {
+        expect(isDigit('$i'.codeUnitAt(0)), isTrue);
+      }
+    });
+    test('should return false for non-digits', () {
+      expect(isDigit('a'.codeUnitAt(0)), isFalse);
+      expect(isDigit(' '.codeUnitAt(0)), isFalse);
+      expect(isDigit('%'.codeUnitAt(0)), isFalse);
     });
   });
 
@@ -74,7 +102,7 @@ main() {
       expect(repeat('ab', 3), 'ababab');
     });
     test('should repeat flipped non-empty string '
-         'on negative number of times', () {
+        'on negative number of times', () {
       expect(repeat('ab', -3), 'bababa');
     });
     test('should return null on null', () {
@@ -169,7 +197,6 @@ main() {
       expect(padLeft(null, 4, '012'), '0120');
       expect(padLeft('', 4, '012'), '0120');
     });
-
   });
 
   group('padRight', () {
@@ -195,11 +222,9 @@ main() {
       expect(padRight(null, 4, '012'), '2012');
       expect(padRight('', 4, '012'), '2012');
     });
-
   });
 
   group('trimLeft', () {
-
     test('should trim whitespace from the left', () {
       expect(trimLeft(''), '');
       expect(trimLeft(' '), '');
@@ -216,12 +241,9 @@ main() {
     test('should throw on null', () {
       expect(() => trimLeft(null), throws);
     });
-
   });
 
-
   group('trimRight', () {
-
     test('should trim whitespace from the right', () {
       expect(trimRight(''), '');
       expect(trimRight(' '), '');
@@ -238,9 +260,7 @@ main() {
     test('should throw on null', () {
       expect(() => trimRight(null), throws);
     });
-
   });
-
 
   group('center', () {
     test('should return the input if length greater than width', () {
@@ -270,7 +290,6 @@ main() {
       expect(center(null, 5, '012345'), '01345');
       expect(center('', 5, '012345'), '01345');
     });
-
   });
 
   group('equalsIgnoreCase', () {
@@ -294,7 +313,6 @@ main() {
       expect(equalsIgnoreCase('abc', null), isFalse);
       expect(equalsIgnoreCase(null, 'abc'), isFalse);
     });
-
   });
 
   group('compareIgnoreCase', () {
@@ -309,6 +327,5 @@ main() {
       expect(compareIgnoreCase('abd', 'abc'), greaterThan(0));
       expect(compareIgnoreCase('abD', 'abc'), greaterThan(0));
     });
-
   });
 }

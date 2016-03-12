@@ -14,7 +14,7 @@
 
 library quiver.iterables.partition_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:quiver/iterables.dart';
 
 main() {
@@ -45,7 +45,7 @@ main() {
     });
 
     test('should return partitions of correct size if '
-         'partition size > input size', () {
+        'partition size > input size', () {
       var it = partition([1, 2, 3, 4, 5], 3).iterator;
       expect(it.moveNext(), isTrue);
       expect(it.current, equals([1, 2, 3]));

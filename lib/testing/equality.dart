@@ -1,4 +1,4 @@
-// Copyright 2013 Google Inc. All Rights Reserved.
+// Copyright 2014 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library quiver.streams.all_tests;
+/**
+ * Utilities for testing the equality of Dart object
+ */
+library quiver.testing.equality;
 
-import 'collect_test.dart' as collect;
-import 'concat_test.dart' as concat;
-import 'enumerate_test.dart' as enumerate;
-import 'streambuffer_test.dart' as streambuffer;
+import 'package:matcher/matcher.dart';
+import 'package:quiver/iterables.dart';
 
-main() {
-  collect.main();
-  concat.main();
-  enumerate.main();
-  streambuffer.main();
-}
+part 'src/equality/equality.dart';

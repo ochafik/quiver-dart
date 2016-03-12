@@ -12,35 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library quiver.streams.collect_test;
+library quiver.async.collect_test;
 
 import 'dart:async';
 import 'dart:math';
 
-import 'package:unittest/unittest.dart';
-import 'package:quiver/streams.dart';
+import 'package:test/test.dart';
+import 'package:quiver/async.dart';
 
 main() {
-
   group('collect', () {
-
-    test('should produce no events for no futures', () =>
-        collect([]).toList().then((events) => expect(events, isEmpty)));
+    test('should produce no events for no futures',
+        () => collect([]).toList().then((events) => expect(events, isEmpty)));
 
     test('should produce events for future completions in input order', () {
-      var futures = new Iterable.generate(5, (int i) => i.isEven ?
-          new Future.value(i) :
-          new Future.error(i));
+      var futures = new Iterable.generate(
+          5, (int i) => i.isEven ? new Future.value(i) : new Future.error(i));
       var events = [];
       var done = new Completer();
 
-      collect(futures).listen(events.add, onError: (i) { events.add('e$i'); },
-          onDone: done.complete);
-      return Future.wait(futures)
-          .catchError((_) => done.future)
-          .then((_) {
-            expect(events, [0, 'e1', 2, 'e3', 4]);
-          });
+      collect(futures).listen(events.add, onError: (i) {
+        events.add('e$i');
+      }, onDone: done.complete);
+      return Future.wait(futures).catchError((_) => done.future).then((_) {
+        expect(events, [0, 'e1', 2, 'e3', 4]);
+      });
     });
 
     test('should only advance iterator once '
@@ -63,13 +59,10 @@ main() {
 
       collected.listen(decrementParallel,
           onError: decrementParallel, onDone: done.complete);
-      return done.future
-          .then((_) {
-            expect(maxParallel, 1);
-            expect(eventCount, 3);
-          });
+      return done.future.then((_) {
+        expect(maxParallel, 1);
+        expect(eventCount, 3);
+      });
     });
-
   });
-
 }

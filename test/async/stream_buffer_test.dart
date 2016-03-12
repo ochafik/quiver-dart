@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library quiver.streams.streambuffer_test;
+library quiver.async.stream_buffer_test;
 
 import 'dart:async';
-import 'package:unittest/unittest.dart';
-import 'package:quiver/streams.dart';
+import 'package:test/test.dart';
+import 'package:quiver/async.dart';
 
 void main() {
   group("StreamBuffer", () {
-    StreamBuffer<int> buf;
     test("returns orderly overlaps", () {
       StreamBuffer<int> buf = new StreamBuffer();
-      new Stream.fromIterable([[1], [2,3,4], [5,6,7,8]]).pipe(buf);
+      new Stream.fromIterable([[1], [2, 3, 4], [5, 6, 7, 8]]).pipe(buf);
       return Future.wait([buf.read(2), buf.read(4), buf.read(2)]).then((vals) {
         expect(vals[0], equals([1, 2]));
         expect(vals[1], equals([3, 4, 5, 6]));
@@ -77,11 +76,11 @@ void main() {
       }).catchError((e) {
         error = e;
       }).then((_) {
-        expect(error is UnderflowError, isTrue, reason: "!UnderflowError: $error");
+        expect(error is UnderflowError, isTrue,
+            reason: "!UnderflowError: $error");
       });
       new Stream.fromIterable([1, 2, 3]).pipe(buf);
       return future;
     });
   });
 }
-

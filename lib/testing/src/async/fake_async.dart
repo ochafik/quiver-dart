@@ -37,10 +37,7 @@ part of quiver.testing.async;
 ///       });
 ///     });
 abstract class FakeAsync {
-
   factory FakeAsync() = _FakeAsync;
-
-  FakeAsync._();
 
   /// Returns a fake [Clock] whose time can is elapsed by calls to [elapse] and
   /// [elapseBlocking].
@@ -90,22 +87,46 @@ abstract class FakeAsync {
   /// and [ZoneSpecification.scheduleMicrotask] to store callbacks for later
   /// execution within the zone via calls to [elapse].
   ///
-  /// [callback] is called with `this` as argument.
-  run(callback(FakeAsync self));
+  /// Calls [callback] with `this` as argument and returns the result returned
+  /// by [callback].
+  dynamic run(callback(FakeAsync self));
+
+  /// Runs all remaining microtasks, including those scheduled as a result of
+  /// running them, until there are no more microtasks scheduled.
+  ///
+  /// Does not run timers.
+  void flushMicrotasks();
+
+  /// Runs all timers until no timers remain (subject to [flushPeriodicTimers]
+  /// option), including those scheduled as a result of running them.
+  ///
+  /// [timeout] lets you set the maximum amount of time the flushing will take.
+  /// Throws a [StateError] if the [timeout] is exceeded. The default timeout
+  /// is 1 hour. [timeout] is relative to the elapsed time.
+  void flushTimers({Duration timeout: const Duration(hours: 1),
+      bool flushPeriodicTimers: true});
+
+  /// The number of created periodic timers that have not been canceled.
+  int get periodicTimerCount;
+
+  /// The number of pending non periodic timers that have not been canceled.
+  int get nonPeriodicTimerCount;
+
+  /// The number of pending microtasks.
+  int get microtaskCount;
 }
 
-class _FakeAsync extends FakeAsync {
-
+class _FakeAsync implements FakeAsync {
   Duration _elapsed = Duration.ZERO;
   Duration _elapsingTo;
+  Queue<Function> _microtasks = new Queue();
+  Set<_FakeTimer> _timers = new Set<_FakeTimer>();
 
-  _FakeAsync() : super._() {
-    _elapsed;
-  }
-
+  @override
   Clock getClock(DateTime initialTime) =>
       new Clock(() => initialTime.add(_elapsed));
 
+  @override
   void elapse(Duration duration) {
     if (duration.inMicroseconds < 0) {
       throw new ArgumentError('Cannot call elapse with negative duration');
@@ -114,16 +135,12 @@ class _FakeAsync extends FakeAsync {
       throw new StateError('Cannot elapse until previous elapse is complete.');
     }
     _elapsingTo = _elapsed + duration;
-    _drainMicrotasks();
-    Timer next;
-    while ((next = _getNextTimer()) != null) {
-      _runTimer(next);
-      _drainMicrotasks();
-    }
+    _drainTimersWhile((_FakeTimer next) => next._nextCall <= _elapsingTo);
     _elapseTo(_elapsingTo);
     _elapsingTo = null;
   }
 
+  @override
   void elapseBlocking(Duration duration) {
     if (duration.inMicroseconds < 0) {
       throw new ArgumentError('Cannot call elapse with negative duration');
@@ -134,6 +151,30 @@ class _FakeAsync extends FakeAsync {
     }
   }
 
+  @override
+  void flushMicrotasks() {
+    _drainMicrotasks();
+  }
+
+  @override
+  void flushTimers({Duration timeout: const Duration(hours: 1),
+      bool flushPeriodicTimers: true}) {
+    final absoluteTimeout = _elapsed + timeout;
+    _drainTimersWhile((_FakeTimer timer) {
+      if (timer._nextCall > absoluteTimeout) {
+        throw new StateError(
+            'Exceeded timeout ${timeout} while flushing timers');
+      }
+      if (flushPeriodicTimers) {
+        return _timers.isNotEmpty;
+      } else {
+        // translation: keep draining while non-periodic timers exist
+        return _timers.any((_FakeTimer timer) => !timer._isPeriodic);
+      }
+    });
+  }
+
+  @override
   run(callback(FakeAsync self)) {
     if (_zone == null) {
       _zone = Zone.current.fork(specification: _zoneSpec);
@@ -142,41 +183,40 @@ class _FakeAsync extends FakeAsync {
   }
   Zone _zone;
 
+  @override
+  int get periodicTimerCount =>
+      _timers.where((_FakeTimer timer) => timer._isPeriodic).length;
+
+  @override
+  int get nonPeriodicTimerCount =>
+      _timers.where((_FakeTimer timer) => !timer._isPeriodic).length;
+
+  @override
+  int get microtaskCount => _microtasks.length;
+
   ZoneSpecification get _zoneSpec => new ZoneSpecification(
-      createTimer: (
-          _,
-          __,
-          ___,
-          Duration duration,
-          Function callback) {
-        return _createTimer(duration, callback, false);
-      },
-      createPeriodicTimer: (
-          _,
-          __,
-          ___,
-          Duration duration,
-          Function callback) {
-        return _createTimer(duration, callback, true);
-      },
-      scheduleMicrotask: (
-          _,
-          __,
-          ___,
-          Function microtask) {
-        _microtasks.add(microtask);
-      });
+      createTimer: (_, __, ___, Duration duration, Function callback) {
+    return _createTimer(duration, callback, false);
+  }, createPeriodicTimer: (_, __, ___, Duration duration, Function callback) {
+    return _createTimer(duration, callback, true);
+  }, scheduleMicrotask: (_, __, ___, Function microtask) {
+    _microtasks.add(microtask);
+  });
+
+  _drainTimersWhile(bool predicate(_FakeTimer)) {
+    _drainMicrotasks();
+    _FakeTimer next;
+    while ((next = _getNextTimer()) != null && predicate(next)) {
+      _runTimer(next);
+      _drainMicrotasks();
+    }
+  }
 
   _elapseTo(Duration to) {
     if (to > _elapsed) {
       _elapsed = to;
     }
   }
-
-  Queue<Function> _microtasks = new Queue();
-
-  Set<_FakeTimer> _timers = new Set<_FakeTimer>();
-  bool _waitingForTimer = false;
 
   Timer _createTimer(Duration duration, Function callback, bool isPeriodic) {
     var timer = new _FakeTimer._(duration, callback, isPeriodic, this);
@@ -185,7 +225,7 @@ class _FakeAsync extends FakeAsync {
   }
 
   _FakeTimer _getNextTimer() {
-    return min(_timers.where((timer) => timer._nextCall <= _elapsingTo),
+    return min(_timers,
         (timer1, timer2) => timer1._nextCall.compareTo(timer2._nextCall));
   }
 
@@ -196,8 +236,8 @@ class _FakeAsync extends FakeAsync {
       timer._callback(timer);
       timer._nextCall += timer._duration;
     } else {
-      timer._callback();
       _timers.remove(timer);
+      timer._callback();
     }
   }
 
@@ -210,11 +250,9 @@ class _FakeAsync extends FakeAsync {
   _hasTimer(_FakeTimer timer) => _timers.contains(timer);
 
   _cancelTimer(_FakeTimer timer) => _timers.remove(timer);
-
 }
 
 class _FakeTimer implements Timer {
-
   final Duration _duration;
   final Function _callback;
   final bool _isPeriodic;

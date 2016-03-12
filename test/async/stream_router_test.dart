@@ -16,43 +16,42 @@ library quiver.async.stream_router_test;
 
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:quiver/async.dart';
 
 main() {
   group('StreamRouter', () {
-
     test('should route an event to the correct stream', () {
       var controller = new StreamController<String>();
-      var router = new StreamRouter<String>(controller.stream)
+      new StreamRouter<String>(controller.stream)
         ..route((e) => e == 'foo').listen((e) {
-            expect(e, 'foo');
-          })
+          expect(e, 'foo');
+        })
         ..route((e) => e == 'bar').listen((e) {
-            fail('wrong stream');
-          })
+          fail('wrong stream');
+        })
         ..route((e) => e == 'foo').listen((e) {
-            fail('wrong stream');
-          })
+          fail('wrong stream');
+        })
         ..defaultStream.listen((e) {
-            fail('wrong stream');
-          });
+          fail('wrong stream');
+        });
       controller.add('foo');
       return controller.close();
     });
 
     test('should send events that match no predicate to defaultStream', () {
       var controller = new StreamController<String>();
-      var router = new StreamRouter<String>(controller.stream)
+      new StreamRouter<String>(controller.stream)
         ..route((e) => e == 'foo').listen((e) {
-            fail('wrong stream');
-          })
+          fail('wrong stream');
+        })
         ..route((e) => e == 'bar').listen((e) {
-            fail('wrong stream');
-          })
+          fail('wrong stream');
+        })
         ..defaultStream.listen((e) {
-            expect(e, 'baz');
-          });
+          expect(e, 'baz');
+        });
       controller.add('baz');
       return controller.close();
     });
@@ -61,13 +60,17 @@ main() {
       var controller = new StreamController<int>(sync: true);
       var router = new StreamRouter<int>(controller.stream);
       // toList() will only complete when the child streams are closed
-      var future = Future.wait([
-          router.route((e) => e % 2 == 0).toList(),
-          router.route((e) => e % 2 == 1).toList(),
-      ]).then((l) {
+      var future = Future
+          .wait([
+        router.route((e) => e % 2 == 0).toList(),
+        router.route((e) => e % 2 == 1).toList(),
+      ])
+          .then((l) {
         expect(l, [[4], [5]]);
       });
-      controller..add(4)..add(5);
+      controller
+        ..add(4)
+        ..add(5);
       router.close();
       return future;
     });

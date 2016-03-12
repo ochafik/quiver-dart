@@ -14,24 +14,19 @@
 
 library quiver.async.create_timer_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:quiver/async.dart';
 
 main() {
-
   group('createTimer', () {
-
     test('should be assignable to CreateTimer', () {
       expect(createTimer, new isInstanceOf<CreateTimer>());
     });
-
   });
 
   group('createTimerPeriodic', () {
-
     test('should be assignable to CreateTimerPeriodic', () {
       expect(createTimerPeriodic, new isInstanceOf<CreateTimerPeriodic>());
     });
-
   });
 }

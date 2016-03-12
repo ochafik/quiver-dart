@@ -15,7 +15,7 @@
 library quiver.collection.collection_test;
 
 import 'package:quiver/collection.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 main() {
   group('listsEqual', () {
@@ -57,8 +57,8 @@ main() {
       expect(setsEqual(null, null), isTrue);
       expect(setsEqual(new Set(), new Set()), isTrue);
       expect(setsEqual(new Set.from([1]), new Set.from([1])), isTrue);
-      expect(setsEqual(new Set.from(['a', 'b']),
-          new Set.from(['a', 'b'])), isTrue);
+      expect(setsEqual(new Set.from(['a', 'b']), new Set.from(['a', 'b'])),
+          isTrue);
     });
 
     test('return false for non-equal sets', () {

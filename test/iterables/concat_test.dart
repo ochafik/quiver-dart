@@ -14,7 +14,7 @@
 
 library quiver.iterables.concat_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:quiver/iterables.dart';
 
 main() {
@@ -28,7 +28,7 @@ main() {
     });
 
     test('should chain multiple input iterables', () {
-      expect(concat([[1, 2, 3], [-1, -2, -3]]), [1, 2, 3, -1, -2 , -3]);
+      expect(concat([[1, 2, 3], [-1, -2, -3]]), [1, 2, 3, -1, -2, -3]);
     });
 
     test('should throw for null input', () {
@@ -50,4 +50,3 @@ main() {
     });
   });
 }
-

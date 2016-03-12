@@ -16,12 +16,11 @@ library quiver.async.future_group_test;
 
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:quiver/async.dart';
 
 main() {
   group('FutureGroup', () {
-
     test('should complete when all added futures are complete', () {
       var group = new FutureGroup();
       var completer1 = new Completer();
@@ -58,6 +57,5 @@ main() {
         expect(() => group.add(completer2.future), throws);
       });
     });
-
   });
 }

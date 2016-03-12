@@ -2,6 +2,7 @@
 packages
 pubspec.lock
 build/
+.pub
 
 # IDE
 .project
@@ -9,3 +10,5 @@ build/
 .idea
 *.iml
 
+# Temp files
+*~

@@ -14,18 +14,14 @@
 
 library quiver.async.countdown_timer_test;
 
-import 'dart:async';
-
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:quiver/async.dart';
 import 'package:quiver/time.dart';
 import 'package:quiver/testing/async.dart';
 import 'package:quiver/testing/time.dart';
 
 main() {
-
   group('CountdownTimer', () {
-
     test('should countdown', () {
       new FakeAsync().run((FakeAsync async) {
         var clock = async.getClock(new DateTime.fromMillisecondsSinceEpoch(0));
@@ -33,13 +29,13 @@ main() {
             () => 1000 * clock.now().millisecondsSinceEpoch, 1000000);
 
         var timings = new CountdownTimer(
-            new Duration(milliseconds: 500),
-            new Duration(milliseconds: 100),
-            stopwatch: stopwatch)
-        .map((c) => c.remaining.inMilliseconds);
+            new Duration(milliseconds: 500), new Duration(milliseconds: 100),
+            stopwatch: stopwatch).map((c) => c.remaining.inMilliseconds);
 
         List<int> result;
-        var future = timings.toList().then((list) { result = list; });
+        timings.toList().then((list) {
+          result = list;
+        });
 
         async.elapse(aMillisecond * 500);
         expect(result, [400, 300, 200, 100, 0]);

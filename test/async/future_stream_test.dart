@@ -16,12 +16,11 @@ library quiver.async.future_stream_test;
 
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:quiver/async.dart';
 
 main() {
   group('FutureStream', () {
-
     test('should forward an event', () {
       var completer = new Completer<Stream<String>>();
       var controller = new StreamController<String>();
@@ -62,7 +61,7 @@ main() {
 
       var testCompleter = new Completer();
 
-      var sub = futureStream.listen((_) {}, onError: (e) {
+      futureStream.listen((_) {}, onError: (e) {
         expect(e, 'error');
         testCompleter.complete();
       });
@@ -78,6 +77,5 @@ main() {
       var futureStream = new FutureStream(completer.future, broadcast: true);
       expect(futureStream.isBroadcast, isTrue);
     });
-
   });
 }

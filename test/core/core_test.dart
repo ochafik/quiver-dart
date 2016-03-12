@@ -15,31 +15,28 @@
 library quiver.core_test;
 
 import 'package:quiver/core.dart';
-import 'package:matcher/matcher.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 main() {
   group('firstNonNull', () {
-
     test("should return the first argument if it isn't null", () {
-        expect(firstNonNull(1, 2), 1);
+      expect(firstNonNull(1, 2), 1);
     });
 
     test("should return the second argument if it isn't null", () {
-        expect(firstNonNull(null, 2), 2);
+      expect(firstNonNull(null, 2), 2);
     });
 
     test("should return the third argument if it isn't null", () {
-        expect(firstNonNull(null, null, 3), 3);
+      expect(firstNonNull(null, null, 3), 3);
     });
 
     test("should return the fourth argument if it isn't null", () {
-        expect(firstNonNull(null, null, null, 4), 4);
+      expect(firstNonNull(null, null, null, 4), 4);
     });
 
     test("should throw if all argumentsare null", () {
-        expect(() => firstNonNull(null, null, null, null), throwsArgumentError);
+      expect(() => firstNonNull(null, null, null, null), throwsArgumentError);
     });
-
   });
 }

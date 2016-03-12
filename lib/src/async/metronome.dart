@@ -14,7 +14,6 @@
 
 part of quiver.async;
 
-
 /**
  * A stream of [DateTime] events at [interval]s centered on [anchor].
  *
@@ -49,7 +48,6 @@ part of quiver.async;
  *     ...
  */
 class Metronome extends Stream<DateTime> {
-
   static final DateTime _EPOCH = new DateTime.fromMillisecondsSinceEpoch(0);
 
   final Clock clock;
@@ -70,38 +68,39 @@ class Metronome extends Stream<DateTime> {
       {Clock clock: const Clock(), DateTime anchor})
       : this._(interval, clock: clock, anchor: anchor);
 
-  Metronome._(Duration interval,
-      {Clock clock: const Clock(), DateTime anchor})
+  Metronome._(Duration interval, {Clock clock: const Clock(), DateTime anchor})
       : this.clock = clock,
         this.anchor = anchor,
         this.interval = interval,
         this._intervalMs = interval.inMilliseconds,
-        this._anchorMs = (anchor == null ? clock.now() : anchor)
-            .millisecondsSinceEpoch {
-    _controller = new StreamController<DateTime>.broadcast(sync: true,
-        onCancel: () {
-          _timer.cancel();
-        }, onListen: () {
-          _startTimer(clock.now());
-        });
+        this._anchorMs = (anchor == null
+            ? clock.now()
+            : anchor).millisecondsSinceEpoch {
+    _controller = new StreamController<DateTime>.broadcast(
+        sync: true, onCancel: () {
+      _timer.cancel();
+    }, onListen: () {
+      _startTimer(clock.now());
+    });
   }
 
   StreamSubscription<DateTime> listen(void onData(DateTime event),
-     { Function onError, void onDone(), bool cancelOnError})
-         => _controller.stream.listen(onData,
-                          onError: onError,
-                          onDone: onDone,
-                          cancelOnError: cancelOnError);
+          {Function onError, void onDone(), bool cancelOnError}) =>
+      _controller.stream.listen(onData,
+          onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
   _startTimer(DateTime now) {
-    var delay = _intervalMs
-        - ((now.millisecondsSinceEpoch - _anchorMs) % _intervalMs);
+    var delay =
+        _intervalMs - ((now.millisecondsSinceEpoch - _anchorMs) % _intervalMs);
     _timer = new Timer(new Duration(milliseconds: delay), _tickDate);
   }
 
   _tickDate() {
-    DateTime now = clock.now();
-    _controller.add(now);
-    _startTimer(now);
+    // Hey now, what's all this hinky clock.now() calls? Simple, if the workers
+    // on the receiving end of _controller.add() take a non-zero amount of time
+    // to do their thing (e.g. rendering a large scene with canvas), the next
+    // timer must be adjusted to account for the lapsed time.
+    _controller.add(clock.now());
+    _startTimer(clock.now());
   }
 }

@@ -17,7 +17,7 @@ library quiver.collection.delegates.queue_test;
 import 'dart:collection' show Queue;
 
 import 'package:quiver/collection.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 class MyQueue extends DelegatingQueue<String> {
   final Queue<String> _delegate;
@@ -31,7 +31,7 @@ void main() {
   group('DelegatingQueue', () {
     DelegatingQueue<String> delegatingQueue;
 
-    setUp((){
+    setUp(() {
       delegatingQueue = new MyQueue(new Queue<String>.from(['a', 'b', 'cc']));
     });
 
